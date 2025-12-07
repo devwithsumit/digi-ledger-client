@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { AuthResponse, SignInRequest, SignUpRequest, User, UpdateProfileRequest, UpdateProfileResponse } from '@/types/auth';
 import type { RootState } from '@/store';
+import { updateUser } from '@/store/userSlice';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
@@ -43,6 +44,16 @@ export const onwerAuthApi = createApi({
                 body: data,
             }),
             invalidatesTags: ['Profile'],
+            async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                    if (data?.data) {
+                        dispatch(updateUser(data.data));
+                    }
+                } catch {
+                    // Error handling is done by the component
+                }
+            },
         }),
     }),
 });
