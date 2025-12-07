@@ -16,7 +16,7 @@ export function ProfileView({ profile, onEdit }: ProfileViewProps) {
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-slate-900">Profile Information</h2>
                 <Button variant="secondary" onClick={onEdit}
-                    className="sm:block w-auto px-4! py-2!">
+                    className="sm:block w-fit! px-4! py-2!">
                     Edit Profile
                 </Button>
                 {/* <Button onClick={onEdit} variant='secondary'

@@ -15,7 +15,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles = `
-    w-fit py-2.5 px-6 text-[15px] sm:text-base rounded-xl font-semibold
+    w-full py-2.5 px-6 text-[15px] sm:text-base rounded-xl font-semibold
     transition-all duration-200 cursor-pointer
     disabled:opacity-60 disabled:cursor-not-allowed
   `;
