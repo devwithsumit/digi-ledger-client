@@ -8,14 +8,21 @@ import { RoomForm } from '@/components/properties/RoomForm';
 import { DeleteConfirm } from '@/components/properties/DeleteConfirm';
 import { Button } from '@/components/ui/Button';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
+import { SearchBar } from '@/components/shared/SearchBar';
+import { useLocalSearch } from '@/hooks/useLocalSearch';
 import type { Room, CreateRoomRequest, UpdateRoomRequest } from '@/types/room';
 
 export function RoomsListingPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState<Room | null>(null);
     const [deletingRoom, setDeletingRoom] = useState<Room | null>(null);
+    const [search, setSearch] = useState('');
 
     const { data: rooms = [], isLoading } = useGetRoomsQuery();
+    const filteredRooms = useLocalSearch(rooms, search, [
+        (r) => r.roomNumber,
+        (r) => r.roomType,
+    ]);
     const [createRoom, { isLoading: isCreating }] = useCreateRoomMutation();
     const [updateRoom, { isLoading: isUpdating }] = useUpdateRoomMutation();
     const [deleteRoom, { isLoading: isDeleting }] = useDeleteRoomMutation();
@@ -67,13 +74,18 @@ export function RoomsListingPage() {
                     <Building2 className="w-7 h-7 text-primary" />
                     <h1 className="text-xl font-bold text-slate-900">Rooms</h1>
                 </div>
-                <Button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="w-full hidden sm:flex sm:w-auto"
-                >
-                    <Plus className="w-5 h-5 mr-2 inline" />
-                    Create Room
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <div className="sm:w-64">
+                        <SearchBar value={search} onChange={setSearch} placeholder="Search room or type" />
+                    </div>
+                    <Button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="w-full hidden sm:flex sm:w-auto"
+                    >
+                        <Plus className="w-5 h-5 mr-2 inline" />
+                        Create Room
+                    </Button>
+                </div>
             </div>
 
             <Button
@@ -90,7 +102,7 @@ export function RoomsListingPage() {
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                 </div>
-            ) : rooms.length === 0 ? (
+            ) : filteredRooms.length === 0 ? (
                 <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-12 text-center">
                     <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-slate-700 mb-2">No rooms found</h3>
@@ -102,7 +114,7 @@ export function RoomsListingPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {rooms.map((room) => (
+                    {filteredRooms.map((room) => (
                         <RoomCard
                             key={room.id}
                             room={room}

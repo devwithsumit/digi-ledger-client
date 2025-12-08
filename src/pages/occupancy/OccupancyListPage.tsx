@@ -3,7 +3,9 @@ import { DeleteOccupancyConfirm } from '@/components/occupancy/DeleteOccupancyCo
 import { OccupancyCard } from '@/components/occupancy/OccupancyCard';
 import { OccupancyForm } from '@/components/occupancy/OccupancyForm';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { Button } from '@/components/ui/Button';
+import { useLocalSearch } from '@/hooks/useLocalSearch';
 import type { CreateOccupancyRequest, Occupancy, UpdateOccupancyRequest } from '@/types/occupancy';
 import { Plus, Users } from 'lucide-react';
 import { useState } from 'react';
@@ -13,8 +15,14 @@ export function OccupancyListPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingOccupancy, setEditingOccupancy] = useState<Occupancy | null>(null);
     const [deletingOccupancy, setDeletingOccupancy] = useState<Occupancy | null>(null);
+    const [search, setSearch] = useState('');
 
     const { data: occupancies = [], isLoading } = useGetOccupanciesQuery();
+    const filteredOccupancies = useLocalSearch(occupancies, search, [
+        (o) => o.tenantName,
+        (o) => o.phone,
+        (o) => o.roomNumber,
+    ]);
     const [createOccupancy, { isLoading: isCreating }] = useCreateOccupancyMutation();
     const [updateOccupancy, { isLoading: isUpdating }] = useUpdateOccupancyMutation();
     const [deleteOccupancy, { isLoading: isDeleting }] = useDeleteOccupancyMutation();
@@ -63,13 +71,18 @@ export function OccupancyListPage() {
                     <Users className="w-7 h-7 text-primary" />
                     <h1 className="text-xl font-bold text-slate-900">All Occupancies</h1>
                 </div>
-                <Button
-                    onClick={() => setIsFormOpen(true)}
-                    className="hidden sm:block sm:w-auto"
-                >
-                    <Plus className="w-5 h-5 mr-2 inline" />
-                    Add Occupancy
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <div className="sm:w-64">
+                        <SearchBar value={search} onChange={setSearch} placeholder="Search tenant, phone, or room" />
+                    </div>
+                    <Button
+                        onClick={() => setIsFormOpen(true)}
+                        className="hidden sm:block sm:w-auto"
+                    >
+                        <Plus className="w-5 h-5 mr-2 inline" />
+                        Add Occupancy
+                    </Button>
+                </div>
             </div>
 
             <Button
@@ -86,7 +99,7 @@ export function OccupancyListPage() {
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                 </div>
-            ) : occupancies.length === 0 ? (
+            ) : filteredOccupancies.length === 0 ? (
                 <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-12 text-center">
                     <p className="text-lg font-semibold text-slate-700 mb-2">No occupancies found</p>
                     <p className="text-slate-500 mb-6">Get started by creating your first occupancy</p>
@@ -97,7 +110,7 @@ export function OccupancyListPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {occupancies.map((occupancy) => (
+                    {filteredOccupancies.map((occupancy) => (
                         <OccupancyCard
                             key={occupancy.id}
                             occupancy={occupancy}
